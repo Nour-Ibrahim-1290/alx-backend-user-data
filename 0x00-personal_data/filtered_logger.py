@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Personal Data"""
 
+import os
 import re
 import logging
 import mysql.connector
@@ -49,7 +50,7 @@ def get_db() -> mysql.connector.connection.MySQLConnection:
     db = mysql.connector.connect(
         host=host,
         port=3306,
-        user=user,
+        user=username,
         password=password,
         database=db_name,
     )
@@ -78,3 +79,41 @@ class RedactingFormatter(logging.Formatter):
             original_message,
             self.SEPARATOR
             )
+
+
+def main():
+    """Main function that retrieves and displays user data."""
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM users;")
+
+    # Create a logger
+    logger = logging.getLogger('user_data')
+    logger.setLevel(logging.INFO)
+    handler = logging.StreamHandler()
+    formatter = RedactingFormatter(
+        '%(message)s',
+        ['name', 'email', 'phone', 'ssn', 'password']
+        )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    for row in cursor:
+        user_data = {
+            'name': row[0],
+            'email': row[1],
+            'phone': row[2],
+            'ssn': row[3],
+            'password': row[4],
+            'ip': row[5],
+            'last_login': row[6],
+            'user_agent': row[7]
+        }
+        logger.info(user_data)
+
+    cursor.close()
+    db.close()
+
+
+if __name__ == "__main__":
+    main()
