@@ -41,6 +41,10 @@ def forbidden(error) -> str:
 
 @app.before_request
 def before_request_func():
+    """
+    This function is executed before each request to the API.
+    It checks if the `auth` object.
+    """
     if auth is None:
         return
     if not auth.require_auth(request.path, ['/api/v1/status/', '/api/v1/unauthorized/', '/api/v1/forbidden/']):
