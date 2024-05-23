@@ -9,6 +9,9 @@ User = TypeVar('User')
 
 
 class Auth:
+    """
+    Auth class. This class is the template for all authentication system.
+    """
     def require_auth(self, path: str, excluded_paths: List[str]) -> bool:
         """ Method to require authentication """
         return False
