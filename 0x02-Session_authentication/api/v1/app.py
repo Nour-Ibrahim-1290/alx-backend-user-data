@@ -49,20 +49,20 @@ def before_request_func():
     This function is executed before each request to the API.
     It checks if the `auth` object.
     """
-    if auth is None:
-        return
-    if not auth.require_auth(
-            request.path,
-            ['/api/v1/status/', '/api/v1/unauthorized/', '/api/v1/forbidden/']
-            ):
-        return
-    if auth.authorization_header(request) is None:
-        abort(401)
-    current_user = auth.current_user(request)
-    request.current_user = current_user
-    if current_user is None:
-        abort(403)
+    excluded_paths = ['/api/v1/status/', '/api/v1/unauthorized/',
+                '/api/v1/forbidden/', '/api/v1/auth_session/login/']
+    if auth.require_auth(request.path, excluded_paths):
+        if auth.authorization_header(request) is None \
+                and auth.session_cookie(request) is None:
+            abort(401)
+        elif auth.current_user(request) is None:
+            abort(403)
 
+@app.route('/', methods=['GET'], strict_slashes=False)
+def root_path():
+    """ Root path
+    """
+    return "Cookie value: {}\n".format(auth.session_cookie(request))
 
 if __name__ == "__main__":
     host = getenv("API_HOST", "0.0.0.0")
