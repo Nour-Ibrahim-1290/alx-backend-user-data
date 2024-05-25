@@ -34,7 +34,11 @@ def auth_session():
             return resp
     return jsonify({"error": "wrong password"}), 401
 
-@app_views.route('/auth_session/logout', methods=['DELETE'], strict_slashes=False)
+
+@app_views.route(
+            '/auth_session/logout',
+            methods=['DELETE'],
+            strict_slashes=False)
 def logout():
     """Logout"""
     if auth.destroy_session(request) is False:
