@@ -41,26 +41,14 @@ class SessionAuth(Auth):
         user_id = self.user_id_for_session_id(session_id)
         return User.get(user_id)
 
-    @app_views.route('/auth_session/login', methods=['POST'], strict_slashes=False)
-    def login():
-        email = request.form.get('email')
-        if not email:
-            return jsonify({"error": "email missing"}), 400
+    def destroy_session(self, request=None):
+        """Ends a Session"""
+        if request is None:
+            return False
 
-        password = request.form.get('password')
-        if not password:
-            return jsonify({"error": "password missing"}), 400
+        session_id = self.session_cookie(request)
+        if not session_id or not self.user_id_for_session_id(session_id):
+            return False
 
-        users = User.search({'email': email})
-        if not users:
-            return jsonify({"error": "no user found for this email"}), 404
-
-        for user in users:
-            if user.is_valid_password(password):
-                from api.v1.app import auth
-                session_id = auth.create_session(user.id)
-                response = make_response(user.to_json())
-                response.set_cookie(getenv('SESSION_NAME'), session_id)
-                return response
-
-        return jsonify({"error": "wrong password"}), 401
+        del self.user_id_by_session_id[session_id]
+        return True
